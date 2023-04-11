@@ -25,7 +25,7 @@ jobs:
           - 5000:5432
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: secret
+          POSTGRES_PASSWORD: {{DRONE_TRACKER_POSTGRESS_PASSWORD}}
           POSTGRES_DB: drones
         # Set health checks to wait until postgres has started
         options: >-

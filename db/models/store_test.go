@@ -19,7 +19,6 @@ func TestFlightTx(t *testing.T) {
 	fd := gofakeit.Float32Range(1.0, 8.0)
 	fa := fd * gofakeit.Float32Range(0.8, 1.2) * 2000
 
-
 	n := 5
 
 	errs := make(chan error)
