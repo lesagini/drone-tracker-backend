@@ -9,6 +9,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type returnJsonRequest struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (server *Server) returnJson(ctx *gin.Context) {
+	var req returnJsonRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	fmt.Println(req.Email)
+
+	ctx.JSON(http.StatusOK, req)
+
+}
+
 type createFarmRequest struct {
 	FarmCode        string `json:"farm_code" binding:"required"`
 	FarmCoordinates string `json:"farm_coordinates" binding:"required"`
@@ -27,12 +45,10 @@ func (server *Server) createFarm(ctx *gin.Context) {
 	}
 
 	arg := models.CreateFarmParams{
-		FarmCode:        req.FarmCode,
-		FarmCoordinates: req.FarmCoordinates,
-		FarmAirspace:    req.FarmAirspace,
-		FarmLocation:    req.FarmLocation,
-		FarmGeolocation: req.FarmGeolocation,
-		FarmContact:     req.FarmContact,
+		FarmCode:     req.FarmCode,
+		FarmAirspace: req.FarmAirspace,
+		FarmLocation: req.FarmLocation,
+		FarmContact:  req.FarmContact,
 	}
 
 	farm, err := server.store.CreateFarm(ctx, arg)
