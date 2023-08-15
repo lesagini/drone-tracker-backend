@@ -9,30 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// type returnJsonRequest struct {
-// 	Email    string `json:"email" binding:"required"`
-// 	Password string `json:"password" binding:"required"`
-// }
-
-// func (server *Server) returnJson(ctx *gin.Context) {
-// 	var req returnJsonRequest
-
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
-// 	fmt.Println(req.Email)
-
-// 	ctx.JSON(http.StatusOK, req)
-
-// }
-
 type createFieldRequest struct {
 	FieldName      string             `json:"field_name" binding:"required"`
 	FieldType      models.FieldTypes  `json:"field_type" binding:"required,oneof= Block GH"`
 	FieldFarmID    string             `json:"field_farm_id" binding:"required"`
 	FieldVarietyID string             `json:"field_variety_id" binding:"required"`
-	FieldPolygon   string             `json:"field_polygon" binding:"required"`
+	FieldPolygon   [][]float32        `json:"field_polygon" binding:"required"`
 	FieldArea      string             `json:"field_area" binding:"required"`
 	FieldDieback   string             `json:"field_dieback" binding:"required"`
 	FieldStageName string             `json:"field_stage_name" binding:"required"`
@@ -52,7 +34,7 @@ func (server *Server) createField(ctx *gin.Context) {
 		FieldType:      req.FieldType,
 		FieldFarmID:    req.FieldFarmID,
 		FieldVarietyID: req.FieldVarietyID,
-		FieldPolygon:   req.FieldPolygon,
+		StGeomfromtext: convertToWKT(req.FieldPolygon),
 		FieldArea:      req.FieldArea,
 		FieldDieback:   req.FieldDieback,
 		FieldStageName: req.FieldStageName,
@@ -122,11 +104,6 @@ func (server *Server) listField(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, field)
 }
 
-// type updateFieldRequest struct {
-// 	FieldName   string `json:"field_name" binding:"required"`
-// 	FieldFarmID string `json:"field_farm_name binding:required`
-// }
-
 type updateFieldRequest struct {
 	FieldName      string             `json:"field_name" binding:"required"`
 	FieldName_2    string             `json:"field_name_to_update" binding:"required"`
@@ -134,7 +111,7 @@ type updateFieldRequest struct {
 	FieldFarmID    string             `json:"field_farm_id" binding:"required"`
 	FieldFarmID_2  string             `json:"field_farm_id_to_update" binding:"required"`
 	FieldVarietyID string             `json:"field_variety_id" binding:"required"`
-	FieldPolygon   string             `json:"field_polygon" binding:"required"`
+	FieldPolygon   [][]float32        `json:"field_polygon" binding:"required"`
 	FieldArea      string             `json:"field_area"`
 	FieldDieback   string             `json:"field_dieback" binding:"required"`
 	FieldStageName string             `json:"field_stage_name" binding:"required"`
@@ -145,33 +122,32 @@ type updateFieldRequest struct {
 // 	MyRequest []updateFieldRequest
 // }
 
-func (server *Server) getFieldForUpdate(ctx *gin.Context) {
-	var rereq []updateFieldRequest
-	if err := ctx.ShouldBindJSON(&rereq); err != nil {
+func (server *Server) updateField(ctx *gin.Context) {
+	var req updateFieldRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	for _, req := range rereq {
-		arg := models.UpdateFieldParams{
-			FieldName:      req.FieldName,
-			FieldName_2:    req.FieldName_2,
-			FieldType:      req.FieldType,
-			FieldFarmID:    req.FieldFarmID,
-			FieldFarmID_2:  req.FieldFarmID_2,
-			FieldVarietyID: req.FieldVarietyID,
-			FieldPolygon:   req.FieldPolygon,
-			FieldArea:      req.FieldArea,
-			FieldDieback:   req.FieldDieback,
-			FieldStageName: req.FieldStageName,
-			FieldStatus:    req.FieldStatus,
-		}
-
-		field, err := server.store.FieldUpdateTx(ctx, arg)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
-
-		ctx.JSON(http.StatusOK, field)
+	arg := models.UpdateFieldParams{
+		FieldName:      req.FieldName,
+		FieldName_2:    req.FieldName_2,
+		FieldType:      req.FieldType,
+		FieldFarmID:    req.FieldFarmID,
+		FieldFarmID_2:  req.FieldFarmID_2,
+		FieldVarietyID: req.FieldVarietyID,
+		StGeomfromtext: convertToWKT(req.FieldPolygon),
+		FieldArea:      req.FieldArea,
+		FieldDieback:   req.FieldDieback,
+		FieldStageName: req.FieldStageName,
+		FieldStatus:    req.FieldStatus,
 	}
+
+	field, err := server.store.UpdateField(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, field)
+
 }

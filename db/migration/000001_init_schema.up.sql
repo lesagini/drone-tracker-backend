@@ -4,6 +4,8 @@ CREATE TYPE "field_status" AS ENUM ('active', 'suspended', 'inactive');
 CREATE TYPE "field_types" AS ENUM ('GH', 'Block');
 CREATE TYPE "variety_types" AS ENUM ('continuous', 'cyclic');
 CREATE TYPE "user_access" AS ENUM ('superadmin', 'admin', 'user');
+CREATE EXTENSION postgis;
+
 CREATE TABLE "users" (
   "id" bigserial PRIMARY KEY,
   "username" varchar NOT NULL UNIQUE,
@@ -31,7 +33,7 @@ CREATE TABLE "pilots" (
 CREATE TABLE "farms" (
   "id" bigserial NOT NULL,
   "farm_code" varchar UNIQUE PRIMARY KEY NOT NULL,
-  "farm_polygon" varchar UNIQUE NOT NULL,
+  "farm_polygon" geometry NOT NULL,
   "farm_airspace" varchar NOT NULL,
   "farm_location" varchar NOT NULL,
   "farm_creation_date" timestamp DEFAULT 'now()' NOT NULL,
@@ -43,7 +45,7 @@ CREATE TABLE "fields" (
   "field_type" field_types NOT NULL,
   "field_farm_id" varchar NOT NULL ,
   "field_variety_id" varchar NOT NULL,
-  "field_polygon" varchar NOT NULL,
+  "field_polygon" geometry NOT NULL,
   "field_area" numeric NOT NULL DEFAULT 1,
   "field_dieback" numeric NOT NULL DEFAULT 5,
   "field_stage_name" varchar NOT NULL,

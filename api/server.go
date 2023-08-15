@@ -22,7 +22,7 @@ func NewServer(store *db.Transaction) *Server {
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type,access-control-allow-origin, access-control-allow-headers")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type,access-control-allow-origin, access-control-allow-headers,Access-Control-Allow-Origin")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
@@ -31,12 +31,18 @@ func NewServer(store *db.Transaction) *Server {
 	})
 	router.POST("/signup", server.signUpUser)
 	router.POST("/login", server.loginUser)
+
+	//FARM
 	router.POST("/farm", server.createFarm)
 	router.GET("/farm/:farm_code", server.getFarm)
 	router.GET("/farm", server.listFarms)
+
+	// FIELD
 	router.GET("/field/:field_farm_id/:field_name", server.getField)
 	router.GET("/field", server.listField)
-	router.POST("/field/update", server.getFieldForUpdate)
+	router.POST("/field", server.createField)
+	router.PUT("/field", server.updateField)
+	router.DELETE("/field")
 
 	server.router = router
 	return server

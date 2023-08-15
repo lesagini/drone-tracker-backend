@@ -7,6 +7,8 @@ package models
 
 import (
 	"context"
+	"database/sql"
+	"time"
 )
 
 const createField = `-- name: CreateField :one
@@ -15,15 +17,15 @@ INSERT INTO fields (
         field_type,
         field_farm_id,
         field_variety_id,
-        field_polygon,
+        field_polygon,  -- Assuming field_polygon is of type geometry or geography
         field_area,
         field_dieback,
         field_stage_name,
         field_status,
         field_notes
     )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date
+VALUES ($1, $2, $3, $4, ST_GeomFromText($5), $6, $7, $8, $9, $10)
+RETURNING $1, $2, $3, $4, ST_AsText(ST_GeomFromText($5, 4326)), $6
 `
 
 type CreateFieldParams struct {
@@ -31,7 +33,7 @@ type CreateFieldParams struct {
 	FieldType      FieldTypes
 	FieldFarmID    string
 	FieldVarietyID string
-	FieldPolygon   string
+	StGeomfromtext interface{}
 	FieldArea      string
 	FieldDieback   string
 	FieldStageName string
@@ -39,39 +41,42 @@ type CreateFieldParams struct {
 	FieldNotes     string
 }
 
-func (q *Queries) CreateField(ctx context.Context, arg CreateFieldParams) (Field, error) {
+type CreateFieldRow struct {
+	Column1  interface{}
+	Column2  interface{}
+	Column3  interface{}
+	Column4  interface{}
+	StAstext interface{}
+	Column6  interface{}
+}
+
+func (q *Queries) CreateField(ctx context.Context, arg CreateFieldParams) (CreateFieldRow, error) {
 	row := q.db.QueryRowContext(ctx, createField,
 		arg.FieldName,
 		arg.FieldType,
 		arg.FieldFarmID,
 		arg.FieldVarietyID,
-		arg.FieldPolygon,
+		arg.StGeomfromtext,
 		arg.FieldArea,
 		arg.FieldDieback,
 		arg.FieldStageName,
 		arg.FieldStatus,
 		arg.FieldNotes,
 	)
-	var i Field
+	var i CreateFieldRow
 	err := row.Scan(
-		&i.ID,
-		&i.FieldName,
-		&i.FieldType,
-		&i.FieldFarmID,
-		&i.FieldVarietyID,
-		&i.FieldPolygon,
-		&i.FieldArea,
-		&i.FieldDieback,
-		&i.FieldStageName,
-		&i.FieldStatus,
-		&i.FieldNotes,
-		&i.FieldCreationDate,
+		&i.Column1,
+		&i.Column2,
+		&i.Column3,
+		&i.Column4,
+		&i.StAstext,
+		&i.Column6,
 	)
 	return i, err
 }
 
 const getField = `-- name: GetField :one
-SELECT id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date
+SELECT id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date, ST_AsGeoJSON(field_polygon) AS field_polygon_geojson
 FROM fields
 WHERE field_name = $1 AND field_farm_id = $2
 LIMIT 1
@@ -82,9 +87,25 @@ type GetFieldParams struct {
 	FieldFarmID string
 }
 
-func (q *Queries) GetField(ctx context.Context, arg GetFieldParams) (Field, error) {
+type GetFieldRow struct {
+	ID                  sql.NullInt64
+	FieldName           string
+	FieldType           FieldTypes
+	FieldFarmID         string
+	FieldVarietyID      string
+	FieldPolygon        interface{}
+	FieldArea           string
+	FieldDieback        string
+	FieldStageName      string
+	FieldStatus         FieldStatus
+	FieldNotes          string
+	FieldCreationDate   time.Time
+	FieldPolygonGeojson interface{}
+}
+
+func (q *Queries) GetField(ctx context.Context, arg GetFieldParams) (GetFieldRow, error) {
 	row := q.db.QueryRowContext(ctx, getField, arg.FieldName, arg.FieldFarmID)
-	var i Field
+	var i GetFieldRow
 	err := row.Scan(
 		&i.ID,
 		&i.FieldName,
@@ -98,12 +119,13 @@ func (q *Queries) GetField(ctx context.Context, arg GetFieldParams) (Field, erro
 		&i.FieldStatus,
 		&i.FieldNotes,
 		&i.FieldCreationDate,
+		&i.FieldPolygonGeojson,
 	)
 	return i, err
 }
 
 const getFieldForUpdate = `-- name: GetFieldForUpdate :one
-SELECT id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date
+SELECT id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date, ST_AsGeoJSON(field_polygon) AS field_polygon_geojson
 FROM fields
 WHERE field_name = $1 AND field_farm_id = $2
 LIMIT 1 FOR NO KEY
@@ -115,9 +137,25 @@ type GetFieldForUpdateParams struct {
 	FieldFarmID string
 }
 
-func (q *Queries) GetFieldForUpdate(ctx context.Context, arg GetFieldForUpdateParams) (Field, error) {
+type GetFieldForUpdateRow struct {
+	ID                  sql.NullInt64
+	FieldName           string
+	FieldType           FieldTypes
+	FieldFarmID         string
+	FieldVarietyID      string
+	FieldPolygon        interface{}
+	FieldArea           string
+	FieldDieback        string
+	FieldStageName      string
+	FieldStatus         FieldStatus
+	FieldNotes          string
+	FieldCreationDate   time.Time
+	FieldPolygonGeojson interface{}
+}
+
+func (q *Queries) GetFieldForUpdate(ctx context.Context, arg GetFieldForUpdateParams) (GetFieldForUpdateRow, error) {
 	row := q.db.QueryRowContext(ctx, getFieldForUpdate, arg.FieldName, arg.FieldFarmID)
-	var i Field
+	var i GetFieldForUpdateRow
 	err := row.Scan(
 		&i.ID,
 		&i.FieldName,
@@ -131,25 +169,42 @@ func (q *Queries) GetFieldForUpdate(ctx context.Context, arg GetFieldForUpdatePa
 		&i.FieldStatus,
 		&i.FieldNotes,
 		&i.FieldCreationDate,
+		&i.FieldPolygonGeojson,
 	)
 	return i, err
 }
 
 const listFields = `-- name: ListFields :many
-SELECT id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date
+SELECT id, field_name, field_type, field_farm_id, field_variety_id, field_polygon, field_area, field_dieback, field_stage_name, field_status, field_notes, field_creation_date, ST_AsGeoJSON(field_polygon) AS field_polygon_geojson
 FROM fields
 ORDER BY field_name
 `
 
-func (q *Queries) ListFields(ctx context.Context) ([]Field, error) {
+type ListFieldsRow struct {
+	ID                  sql.NullInt64
+	FieldName           string
+	FieldType           FieldTypes
+	FieldFarmID         string
+	FieldVarietyID      string
+	FieldPolygon        interface{}
+	FieldArea           string
+	FieldDieback        string
+	FieldStageName      string
+	FieldStatus         FieldStatus
+	FieldNotes          string
+	FieldCreationDate   time.Time
+	FieldPolygonGeojson interface{}
+}
+
+func (q *Queries) ListFields(ctx context.Context) ([]ListFieldsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listFields)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Field
+	var items []ListFieldsRow
 	for rows.Next() {
-		var i Field
+		var i ListFieldsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.FieldName,
@@ -163,6 +218,7 @@ func (q *Queries) ListFields(ctx context.Context) ([]Field, error) {
 			&i.FieldStatus,
 			&i.FieldNotes,
 			&i.FieldCreationDate,
+			&i.FieldPolygonGeojson,
 		); err != nil {
 			return nil, err
 		}
@@ -183,7 +239,7 @@ set field_name = $1,
     field_farm_id = $2,
     field_type = $3,
     field_variety_id = $4,
-    field_polygon = $5,
+    field_polygon = ST_GeomFromText($5),
     field_area = $6,
     field_dieback = $7,
     field_stage_name = $8,
@@ -198,7 +254,7 @@ type UpdateFieldParams struct {
 	FieldFarmID    string
 	FieldType      FieldTypes
 	FieldVarietyID string
-	FieldPolygon   string
+	StGeomfromtext interface{}
 	FieldArea      string
 	FieldDieback   string
 	FieldStageName string
@@ -214,7 +270,7 @@ func (q *Queries) UpdateField(ctx context.Context, arg UpdateFieldParams) (Field
 		arg.FieldFarmID,
 		arg.FieldType,
 		arg.FieldVarietyID,
-		arg.FieldPolygon,
+		arg.StGeomfromtext,
 		arg.FieldArea,
 		arg.FieldDieback,
 		arg.FieldStageName,

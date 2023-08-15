@@ -5,6 +5,7 @@ import (
 	"drones/db/models"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,13 +28,30 @@ func (server *Server) returnJson(ctx *gin.Context) {
 
 }
 
+func convertToWKT(coordinates [][]float32) string {
+	var points []string
+	for _, coord := range coordinates {
+		// fmt.Print(points)
+		if len(coord) > 0 {
+			point := fmt.Sprintf("%.6f %.6f", coord[0], coord[1])
+			points = append(points, point)
+		}
+
+	}
+
+	// Close the polygon by repeating the first point at the end
+	points = append(points, fmt.Sprintf("%.6f %.6f", coordinates[0][0], coordinates[0][1]))
+	a := fmt.Sprintf("POLYGON((%s))", strings.Join(points, ","))
+	fmt.Printf(a)
+	return a
+}
+
 type createFarmRequest struct {
-	FarmCode        string `json:"farm_code" binding:"required"`
-	FarmCoordinates string `json:"farm_coordinates" binding:"required"`
-	FarmAirspace    string `json:"farm_airspace" binding:"required"`
-	FarmLocation    string `json:"farm_location" binding:"required,oneof= Naivasha Nanyuki"`
-	FarmGeolocation string `json:"farm_geolocation" binding:"required"`
-	FarmContact     int64  `json:"farm_contact" binding:"required"`
+	FarmCode     string      `json:"farm_code" binding:"required"`
+	FarmAirspace string      `json:"farm_airspace" binding:"required"`
+	FarmLocation string      `json:"farm_location" binding:"required,oneof= Naivasha Nanyuki"`
+	FarmPolygon  [][]float32 `json:"farm_polygon"`
+	FarmContact  int64       `json:"farm_contact" binding:"required"`
 }
 
 func (server *Server) createFarm(ctx *gin.Context) {
@@ -43,9 +61,12 @@ func (server *Server) createFarm(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
+	// a := interface{}(req.FarmPolygon)
+	a := convertToWKT(req.FarmPolygon)
+	ctx.JSON(http.StatusOK, a)
 	arg := models.CreateFarmParams{
 		FarmCode:     req.FarmCode,
+		FarmPolygon:  a,
 		FarmAirspace: req.FarmAirspace,
 		FarmLocation: req.FarmLocation,
 		FarmContact:  req.FarmContact,

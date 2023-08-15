@@ -23,7 +23,7 @@ RETURNING id, farm_code, farm_polygon, farm_airspace, farm_location, farm_creati
 
 type CreateFarmParams struct {
 	FarmCode     string
-	FarmPolygon  string
+	FarmPolygon  interface{}
 	FarmAirspace string
 	FarmLocation string
 	FarmContact  int64

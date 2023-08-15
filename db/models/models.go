@@ -271,7 +271,7 @@ func (ns NullVarietyTypes) Value() (driver.Value, error) {
 type Farm struct {
 	ID               int64
 	FarmCode         string
-	FarmPolygon      string
+	FarmPolygon      interface{}
 	FarmAirspace     string
 	FarmLocation     string
 	FarmCreationDate time.Time
@@ -284,7 +284,7 @@ type Field struct {
 	FieldType         FieldTypes
 	FieldFarmID       string
 	FieldVarietyID    string
-	FieldPolygon      string
+	FieldPolygon      interface{}
 	FieldArea         string
 	FieldDieback      string
 	FieldStageName    string

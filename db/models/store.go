@@ -101,7 +101,7 @@ func (transaction *Transaction) FlightTx(ctx context.Context, arg CreateFlightPa
 
 type FieldUpdateTxResults struct {
 	Field         Field
-	initial_field Field
+	initial_field GetFieldForUpdateRow
 	new_field     Field
 }
 
@@ -122,7 +122,7 @@ func (transaction *Transaction) FieldUpdateTx(ctx context.Context, arg UpdateFie
 			FieldFarmID:    arg.FieldFarmID,
 			FieldType:      arg.FieldType,
 			FieldVarietyID: arg.FieldVarietyID,
-			FieldPolygon:   arg.FieldPolygon,
+			StGeomfromtext: arg.StGeomfromtext,
 			FieldArea:      arg.FieldArea,
 			FieldDieback:   arg.FieldDieback,
 			FieldStageName: arg.FieldStageName,
