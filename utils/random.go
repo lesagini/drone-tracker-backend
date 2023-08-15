@@ -32,10 +32,10 @@ type Details struct {
 	PilotFarmLocation            string
 	FlightDuration               float32
 	FlightAcreage                float32
-	VarietyInternalIdentity    string
-	VarietyBotanicalName       string
-	VarietyAcreage              float32
-	VarietyItervalCode         string
+	VarietyInternalIdentity      string
+	VarietyBotanicalName         string
+	VarietyAcreage               float32
+	VarietyItervalCode           string
 }
 
 func GetDetails() Details {
@@ -66,11 +66,11 @@ func GetDetails() Details {
 	pilotFarmLocation := farmLocation
 	flightDuration := gofakeit.Float32Range(1.0, 8.0)
 	flightAcreage := flightDuration * gofakeit.Float32Range(0.8, 1.2) * 2000
-	
-	variety_botanical_name := gofakeit.Color() +" " + gofakeit.Fruit()
+
+	variety_botanical_name := gofakeit.Color() + " " + gofakeit.Fruit()
 	variety_internal_identity := GetNameInitials(variety_botanical_name)
 	variety_acreage := gofakeit.Float32Range(10.0, 50.0)
-	variety_iterval_code := fmt.Sprintf("%07b",rand.Intn(128))
+	variety_iterval_code := fmt.Sprintf("%07b", rand.Intn(128))
 
 	details := Details{
 		farmCode,
@@ -99,8 +99,6 @@ func GetDetails() Details {
 		variety_botanical_name,
 		variety_acreage,
 		variety_iterval_code,
-
-
 	}
 
 	return details

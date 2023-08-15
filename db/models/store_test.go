@@ -28,8 +28,6 @@ func TestFlightTx(t *testing.T) {
 		go func() {
 			result, err := store.FlightTx(context.Background(), CreateFlightParams{
 				FlightFarmID:          farm.FarmCode,
-				FlightFarmLocation:    farm.FarmLocation,
-				FlightFarmGeolocation: farm.FarmGeolocation,
 				FlightDuration:        fmt.Sprintf("%f", fd),
 				FlightPilot:           pilot.PilotID,
 				FlightAcreage:         fmt.Sprintf("%f", fa),

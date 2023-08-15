@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	api "drones/api"
+	"drones/api"
 	db "drones/db/models"
 	"drones/utils"
 	"log"
@@ -17,7 +17,6 @@ import (
 // )
 
 func main() {
-
 	config, err := utils.GetConfig(".")
 
 	if err != nil {

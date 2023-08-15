@@ -12,14 +12,12 @@ import (
 
 var d utils.Details = utils.GetDetails()
 
-func createRandomFarm(t *testing.T) Farm{
+func createRandomFarm(t *testing.T) Farm {
 	args := CreateFarmParams{
-		FarmCode:        d.FarmCode,
-		FarmCoordinates: d.FarmCoordinates,
-		FarmAirspace:    d.FarmAirspace,
-		FarmLocation:    d.FarmLocation,
-		FarmGeolocation: d.FarmGeolocation,
-		FarmContact:     d.FarmContact,
+		FarmCode:     d.FarmCode,
+		FarmAirspace: d.FarmAirspace,
+		FarmLocation: d.FarmLocation,
+		FarmContact:  d.FarmContact,
 	}
 	farm, err := testingQueries.CreateFarm(context.Background(), args)
 
@@ -31,7 +29,7 @@ func TestCreateFarm(t *testing.T) {
 	createRandomFarm(t)
 }
 
-func createRandomOperator(t *testing.T) Operator{
+func createRandomOperator(t *testing.T) Operator {
 	args := CreateOperatorParams{
 		OperatorID:                   d.OperatorID,
 		OperatorHeadquater:           d.OperatorHeadquater,
@@ -91,12 +89,10 @@ func TestCreatePilot(t *testing.T) {
 func createRandomFlight(t *testing.T) Flight {
 	pilotid := d.OperatorInitials + "-" + d.PilotInitials + "-" + strconv.Itoa(int(d.PilotNumber))
 	args := CreateFlightParams{
-		FlightFarmLocation:    d.FarmLocation,
-		FlightFarmGeolocation: d.FarmGeolocation,
-		FlightFarmID:          d.FarmCode,
-		FlightPilot:           pilotid,
-		FlightDuration:        fmt.Sprintf("%f", d.FlightDuration),
-		FlightAcreage:         fmt.Sprintf("%f", d.FlightAcreage),
+		FlightFarmID:   d.FarmCode,
+		FlightPilot:    pilotid,
+		FlightDuration: fmt.Sprintf("%f", d.FlightDuration),
+		FlightAcreage:  fmt.Sprintf("%f", d.FlightAcreage),
 	}
 	flight, err := testingQueries.CreateFlight(context.Background(), args)
 
@@ -109,7 +105,6 @@ func createRandomFlight(t *testing.T) Flight {
 
 func TestCreateFlight(t *testing.T) {
 	createRandomFlight(t)
-	
 
 }
 
@@ -129,4 +124,3 @@ func TestCreateVariety(t *testing.T) {
 	require.NotEmpty(t, variety)
 
 }
-
